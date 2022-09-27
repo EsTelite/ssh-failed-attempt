@@ -1,0 +1,40 @@
+version: "3"
+
+output: prefixed
+
+vars:
+  TASKFILE: custodian.yaml
+
+tasks:
+  install-dependencies:
+    desc: Installing dependencies for something
+    cmds:
+      - sudo add-apt-repository ppa:deadsnakes/ppa --yes
+      - sudo apt update && sudo apt install software-properties-common wget gpg -y
+      - sudo apt install python3.8 python3-pip python3-venv -y
+      - curl -fsSL https://get.docker.com -o get-docker.sh && sudo sh get-docker.sh
+      - pip3 install -r requirement.txt
+  setup-event-util:
+    desc: copy and do something
+    cmds:
+      - sudo cp 99-rsyslog-* /etc/rsyslog.d/. && sudo chmod 755 99-rsyslog-*
+      - sudo service rsyslog restart
+      - sudo cp ../send-event-util/send-event.sh /usr/local/bin/send-event.sh && sudo chmod 755 /usr/local/bin/send-event.sh
+      - sudo sed -i -e 's/PRODUCER_ADDR/192.168.241.13/g' /usr/local/bin/send-event.sh
+      - task config-ssh-pass
+  config-ssh-pass:
+    desc: enable ssh pass
+    cmds:
+      - sudo sed -i 's/^PasswordAuthentication .*/PasswordAuthentication yes/' /etc/ssh/sshd_config
+      - sudo service sshd reload
+  start-app:
+    desc: Start the apppppsss
+    cmds:
+      - sudo docker compose up -d
+      - python3 -m uvicorn main:app --host 0.0.0.0
+  install-all:
+    desc: Run lah
+    cmds:
+      - task: install-dependencies
+      - task: setup-event-util
+      - task: start-app

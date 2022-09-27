@@ -1,0 +1,16 @@
+version: '3.1'
+
+services:
+
+  mongo:
+    image: mongo:4.2
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - "mongodb-data:/data/db"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: labcepatsaji777
+volumes:
+  mongodb-data: {}
