@@ -9,17 +9,17 @@ tasks:
   install-dependencies:
     desc: Installing dependencies for something
     cmds:
-      - sudo add-apt-repository ppa:deadsnakes/ppa
-      - sudo apt update && install software-properties-common wget gpg -y
-      - sudo apt install python3.8 python3.8-pip python3.8-venv -y
+      - sudo add-apt-repository ppa:deadsnakes/ppa --yes
+      - sudo apt update && sudo apt install software-properties-common wget gpg -y
+      - sudo apt install python3.8 python3-pip python3-venv -y
       - curl -fsSL https://get.docker.com -o get-docker.sh && sudo sh get-docker.sh
       - pip3 install -r requirement.txt
 
   start-app:
     desc: Start the apppppsss
     cmds:
-      - docker compose up -d
-      - uvicorn main:app --host 0.0.0.0
+      - sudo docker compose up -d
+      - python3 -m uvicorn main:app --host 0.0.0.0
   install-all:
     desc: Run lah
     cmds:
