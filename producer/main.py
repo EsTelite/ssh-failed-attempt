@@ -13,7 +13,4 @@ def sqlite_insert(host):
     data = create_log_attempt(host)
     dict(data)
     dbconn.db.users.insert_one(data)
-    return {
-        'statusCode': 200
-    }
-
+    return {"detail":"success"}
