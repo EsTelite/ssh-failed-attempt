@@ -1,3 +1,3 @@
 #!/bin/sh
 python3 -m uvicorn main:app --host 0.0.0.0 &
-sh watcher.sh
+sh watcher.sh &
