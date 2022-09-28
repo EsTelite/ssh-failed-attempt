@@ -13,9 +13,9 @@ tasks:
       - sudo apt update && sudo apt install software-properties-common wget gpg -y
       - sudo apt install python3.8 python3-pip python3-venv -y
       - pip3 install -r requirement.txt
-
   install-docker:
     desc: Installing docker
+    cmds:
       - curl -fsSL https://get.docker.com -o get-docker.sh && sudo sh get-docker.sh
   setup-event-util:
     desc: copy and do something
@@ -30,11 +30,12 @@ tasks:
     desc: Start the apppppsss
     cmds:
       - sudo docker compose up -d
-      - sh startup.sh
+      - sudo nohup ./startup.sh &
   start-client-watcher:
     desc: Start client watcher
     cmds:
-      - sh watcher.sh
+      - echo "starting-client-watcher"
+      - sudo nohup ./watcher.sh
   install-all:
     desc: Run lah
     cmds:
