@@ -6,7 +6,7 @@ traditional static analysis against AI-powered code review:
 1. **Static analysis (deterministic)** — GitHub Actions workflow
    (`.github/workflows/static-analysis.yml`) running on every PR/push to `main`:
    - **bandit** — SAST scan of `producer/` (hardcoded secrets, insecure patterns).
-   - **pip-audit** — SCA scan of `producer/requirement.txt` (known CVEs in pinned deps).
+   - **pip-audit** — SCA scan of `producer/requirements.txt` (known CVEs in pinned deps).
    Both upload their reports as workflow artifacts and fail the build on findings.
 
 2. **AI code review** — CodeRabbit, configured via `.coderabbit.yaml` at the repo

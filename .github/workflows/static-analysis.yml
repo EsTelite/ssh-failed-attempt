@@ -59,7 +59,7 @@ jobs:
       # omit a CVSS score, so this step is report-only (non-blocking). Severity
       # gating is handled by the Trivy step below instead.
       - name: Run pip-audit on producer dependencies (report only)
-        run: pip-audit -r producer/requirement.txt -f json -o pip-audit-report.json --strict || true
+        run: pip-audit -r producer/requirements.txt -f json -o pip-audit-report.json --strict || true
 
       - name: Show pip-audit report
         run: cat pip-audit-report.json
@@ -81,7 +81,7 @@ jobs:
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           scan-type: fs
-          scan-ref: producer
+          scan-ref: producer/requirements.txt
           format: table
           output: trivy-report.txt
           severity: "HIGH,CRITICAL"
@@ -100,7 +100,7 @@ jobs:
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           scan-type: fs
-          scan-ref: producer
+          scan-ref: producer/requirements.txt
           format: table
           severity: "HIGH,CRITICAL"
           exit-code: "1"
