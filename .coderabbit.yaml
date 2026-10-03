@@ -1,0 +1,34 @@
+language: en-US
+early_access: false
+
+reviews:
+  profile: chill
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  auto_review:
+    enabled: true
+    drafts: false
+  path_instructions:
+    - path: "producer/**/*.py"
+      instructions: >
+        This is a Python FastAPI service that logs SSH failed-attempt events to MongoDB.
+        Flag hardcoded credentials or connection strings, missing input validation on
+        path/query parameters passed into database queries, and any shared mutable
+        module-level state that could cause race conditions across concurrent requests.
+    - path: "**/*.sh"
+      instructions: >
+        These are provisioning/shell scripts used in a Vagrant lab environment that
+        intentionally enables SSH password authentication for demonstration purposes.
+        Flag any additional hardening regressions (permissive file modes, missing
+        quoting around variables, curl/wget piped into shell) beyond the intentional
+        password-auth change.
+
+chat:
+  auto_reply: true
+
+knowledge_base:
+  learnings:
+    scope: auto

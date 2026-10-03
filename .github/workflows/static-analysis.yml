@@ -1,0 +1,106 @@
+name: Static Analysis
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  bandit:
+    name: SAST (bandit)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install bandit
+        run: pip install bandit==1.7.10
+
+      - name: Run bandit on producer/
+        run: |
+          bandit -r producer -f txt -o bandit-report.txt --exit-zero
+          cat bandit-report.txt
+
+      - name: Upload bandit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: bandit-report
+          path: bandit-report.txt
+
+      - name: Fail on high/medium severity findings
+        run: bandit -r producer --severity-level medium
+
+  pip-audit:
+    name: SCA (pip-audit)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pip-audit
+        run: pip install pip-audit==2.7.3
+
+      # pip-audit has no built-in severity filter and many OSV/PYSEC advisories
+      # omit a CVSS score, so this step is report-only (non-blocking). Severity
+      # gating is handled by the Trivy step below instead.
+      - name: Run pip-audit on producer dependencies (report only)
+        run: pip-audit -r producer/requirements.txt -f json -o pip-audit-report.json --strict || true
+
+      - name: Show pip-audit report
+        run: cat pip-audit-report.json
+
+      - name: Upload pip-audit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: pip-audit-report
+          path: pip-audit-report.json
+
+  trivy:
+    name: SCA (trivy, HIGH/CRITICAL gate)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scan on producer dependencies
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: producer/requirements.txt
+          format: table
+          output: trivy-report.txt
+          severity: "HIGH,CRITICAL"
+          exit-code: "0"
+
+      - name: Show Trivy report
+        run: cat trivy-report.txt
+
+      - name: Upload Trivy report
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-report
+          path: trivy-report.txt
+
+      - name: Fail build on HIGH/CRITICAL vulnerabilities
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: producer/requirements.txt
+          format: table
+          severity: "HIGH,CRITICAL"
+          exit-code: "1"

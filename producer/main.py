@@ -20,8 +20,9 @@ async def metric_failed(host):
     json_compatible_item_data = jsonable_encoder(data)
     return JSONResponse(content=json_compatible_item_data)
 
-@app.get("/metric/failed/")
-async def metric_failed():
+@app.get("/metric/failed/top")
+async def top_host():
+    # List failed top 5 host with their count
     log_attempt = dbconn.db.log_attempt
     pipeline = [
         {"$group": {"_id": "$host", "count": {"$sum": 1}}},
@@ -29,6 +30,10 @@ async def metric_failed():
     ]
     data = list(log_attempt.aggregate(pipeline))
     json_compatible_item_data = jsonable_encoder(data)
+    # Do call ntfy.sh webhook when top 5 host count exceeds threshold which is 50
+    if len(data) > 0 and data[0]["count"] > 50:
+        import requests
+        requests.post("https://ntfy.sh/", data=json_compatible_item_data)
     return JSONResponse(content=json_compatible_item_data)
 
 def sqlite_insert(host):
