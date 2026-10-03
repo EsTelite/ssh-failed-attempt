@@ -55,7 +55,10 @@ jobs:
       - name: Install pip-audit
         run: pip install pip-audit==2.7.3
 
-      - name: Run pip-audit on producer dependencies
+      # pip-audit has no built-in severity filter and many OSV/PYSEC advisories
+      # omit a CVSS score, so this step is report-only (non-blocking). Severity
+      # gating is handled by the Trivy step below instead.
+      - name: Run pip-audit on producer dependencies (report only)
         run: pip-audit -r producer/requirement.txt -f json -o pip-audit-report.json --strict || true
 
       - name: Show pip-audit report
@@ -67,5 +70,37 @@ jobs:
           name: pip-audit-report
           path: pip-audit-report.json
 
-      - name: Fail build on known vulnerabilities
-        run: pip-audit -r producer/requirement.txt
+  trivy:
+    name: SCA (trivy, HIGH/CRITICAL gate)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scan on producer dependencies
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: fs
+          scan-ref: producer/requirement.txt
+          format: table
+          output: trivy-report.txt
+          severity: "HIGH,CRITICAL"
+          exit-code: "0"
+
+      - name: Show Trivy report
+        run: cat trivy-report.txt
+
+      - name: Upload Trivy report
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-report
+          path: trivy-report.txt
+
+      - name: Fail build on HIGH/CRITICAL vulnerabilities
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: fs
+          scan-ref: producer/requirement.txt
+          format: table
+          severity: "HIGH,CRITICAL"
+          exit-code: "1"
