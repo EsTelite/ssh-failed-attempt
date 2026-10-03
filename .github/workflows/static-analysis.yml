@@ -81,7 +81,7 @@ jobs:
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           scan-type: fs
-          scan-ref: producer/requirement.txt
+          scan-ref: producer
           format: table
           output: trivy-report.txt
           severity: "HIGH,CRITICAL"
@@ -100,7 +100,7 @@ jobs:
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           scan-type: fs
-          scan-ref: producer/requirement.txt
+          scan-ref: producer
           format: table
           severity: "HIGH,CRITICAL"
           exit-code: "1"
