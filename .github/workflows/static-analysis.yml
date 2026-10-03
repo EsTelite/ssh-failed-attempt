@@ -1,0 +1,71 @@
+name: Static Analysis
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  bandit:
+    name: SAST (bandit)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install bandit
+        run: pip install bandit==1.7.10
+
+      - name: Run bandit on producer/
+        run: |
+          bandit -r producer -f txt -o bandit-report.txt --exit-zero
+          cat bandit-report.txt
+
+      - name: Upload bandit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: bandit-report
+          path: bandit-report.txt
+
+      - name: Fail on high/medium severity findings
+        run: bandit -r producer --severity-level medium
+
+  pip-audit:
+    name: SCA (pip-audit)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pip-audit
+        run: pip install pip-audit==2.7.3
+
+      - name: Run pip-audit on producer dependencies
+        run: pip-audit -r producer/requirement.txt -f json -o pip-audit-report.json --strict || true
+
+      - name: Show pip-audit report
+        run: cat pip-audit-report.json
+
+      - name: Upload pip-audit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: pip-audit-report
+          path: pip-audit-report.json
+
+      - name: Fail build on known vulnerabilities
+        run: pip-audit -r producer/requirement.txt
